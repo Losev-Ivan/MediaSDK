@@ -182,17 +182,16 @@ namespace UMC
         };
 
         // external memory management. No need to delete memory
-        void operator delete(void *p) THROWSEXCEPTION
+        void operator delete(void *p)
         {
             //Anyway its incorrect when we trying free null pointer
-            if (!p)
-                throw VC1Exceptions::vc1_exception(VC1Exceptions::mem_allocation_er);
+            VM_ASSERT(p);
         };
 
-        void operator delete(void *, void *) THROWSEXCEPTION
+        void operator delete(void *, void *)
         {
             // delete for system exceptions case
-            throw VC1Exceptions::vc1_exception(VC1Exceptions::mem_allocation_er);
+            VM_ASSERT(0);
         };
 
         virtual bool     Init(uint32_t iConsumerNumber,
