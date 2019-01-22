@@ -24,7 +24,9 @@
 
 #include "umc_va_linux.h"
 
+#if VA_CHECK_VERSION(1, 1, 0)
 #define VA_DECODE_STREAM_OUT_ENABLE       2
+#endif
 
 #include <list>
 

@@ -130,6 +130,7 @@ mfxStatus CJpegTask::Initialize(UMC::VideoDecoderParams &params,
         }
         m_pMJPEGVideoDecoder->Reset();
 
+#if VA_CHECK_VERSION(1, 1, 0)
         switch(rotation)
         {
         case MFX_ROTATION_0:
@@ -145,6 +146,7 @@ mfxStatus CJpegTask::Initialize(UMC::VideoDecoderParams &params,
             umcRes = m_pMJPEGVideoDecoder->SetRotation(270);
             break;
         }
+#endif
 
         if (umcRes != UMC::UMC_OK)
         {

@@ -98,7 +98,7 @@ unsigned int ConvertMfxFourccToVAFormat(mfxU32 fourcc)
         return VA_FOURCC_UYVY;
     case MFX_FOURCC_P010:
         return VA_FOURCC_P010;
-#if (MFX_VERSION >= 1027)
+#if (MFX_VERSION >= 1027) && VA_CHECK_VERSION(1, 2, 0)
     case MFX_FOURCC_Y210:
          return VA_FOURCC_Y210;
     case MFX_FOURCC_Y410:

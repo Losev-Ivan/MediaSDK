@@ -705,6 +705,7 @@ mfxStatus VAAPIVideoProcessing::Execute(mfxExecuteParams *pParams)
                 }
             } //  if ((30i->60p) && (pParams->refCount > 1)) /* 30i->60p mode only*/
 
+#if VA_CHECK_VERSION(1, 1, 0)
             /* Process special case and scene change flag*/
             if ( MFX_DEINTERLACING_ADVANCED_SCD == pParams->iDeinterlacingAlgorithm &&
                 ( pParams->scene != VPP_NO_SCENE_CHANGE))
@@ -730,6 +731,7 @@ mfxStatus VAAPIVideoProcessing::Execute(mfxExecuteParams *pParams)
 
                 deint.flags |= VA_DEINTERLACING_SCD_ENABLE; // It forces BOB
             }
+#endif
 
             vaSts = vaCreateBuffer(m_vaDisplay,
                                    m_vaContextVPP,
@@ -1448,7 +1450,9 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition_TiledVideoWall(mfxExecutePar
     MFX_AUTO_LTRACE(MFX_TRACE_LEVEL_HOTSPOTS, "VAAPIVideoProcessing::Execute_Composition_TiledVideoWall");
 
     VAStatus vaSts = VA_STATUS_SUCCESS;
+#if VA_CHECK_VERSION(1, 1, 0)
     std::vector<VABlendState> blend_state;
+#endif
 
     MFX_CHECK_NULL_PTR1( pParams );
     MFX_CHECK_NULL_PTR1( pParams->targetSurface.hdl.first );
@@ -1471,7 +1475,9 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition_TiledVideoWall(mfxExecutePar
 
     m_pipelineParam.resize(pParams->refCount + 1);
     m_pipelineParamID.resize(pParams->refCount + 1, VA_INVALID_ID);
+#if VA_CHECK_VERSION(1, 1, 0)
     blend_state.resize(pParams->refCount + 1);
+#endif
 
     std::vector<VARectangle> input_region;
     input_region.resize(pParams->refCount + 1);
@@ -1580,6 +1586,7 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition_TiledVideoWall(mfxExecutePar
                 tilingParams[currTileId].targerRect.height =  output_region[i].y + output_region[i].height;
         }
 
+#if VA_CHECK_VERSION(1, 1, 0)
         /* Global alpha and luma key can not be enabled together*/
         if (pParams->dstRects[i].GlobalAlphaEnable !=0)
         {
@@ -1607,6 +1614,7 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition_TiledVideoWall(mfxExecutePar
         {
             m_pipelineParam[i].blend_state = &blend_state[i];
         }
+#endif
 
         m_pipelineParam[i].pipeline_flags |= VA_PROC_PIPELINE_SUBPICTURES;
         m_pipelineParam[i].filter_flags |= VA_FILTER_SCALING_HQ;
@@ -1710,7 +1718,9 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition(mfxExecuteParams *pParams)
 
     VAStatus vaSts = VA_STATUS_SUCCESS;
     VASurfaceAttrib attrib;
+#if VA_CHECK_VERSION(1, 1, 0)
     std::vector<VABlendState> blend_state;
+#endif
     VAImage imagePrimarySurface;
     mfxU8* pPrimarySurfaceBuffer;
 
@@ -1840,7 +1850,9 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition(mfxExecuteParams *pParams)
 
     m_pipelineParam.resize(pParams->refCount + 1);
     m_pipelineParamID.resize(pParams->refCount + 1, VA_INVALID_ID);
+#if VA_CHECK_VERSION(1, 1, 0)
     blend_state.resize(pParams->refCount + 1);
+#endif
 
     std::vector<VARectangle> input_region;
     input_region.resize(pParams->refCount + 1);
@@ -2121,6 +2133,7 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition(mfxExecuteParams *pParams)
         output_region[refIdx].width  = pParams->dstRects[refIdx-1].DstW;
         m_pipelineParam[refIdx].output_region = &output_region[refIdx];
 
+#if VA_CHECK_VERSION(1, 1, 0)
         /* Global alpha and luma key can not be enabled together*/
         /* Global alpha and luma key can not be enabled together*/
         if (pParams->dstRects[refIdx-1].GlobalAlphaEnable !=0)
@@ -2154,6 +2167,7 @@ mfxStatus VAAPIVideoProcessing::Execute_Composition(mfxExecuteParams *pParams)
         {
             m_pipelineParam[refIdx].blend_state = &blend_state[refIdx];
         }
+#endif
 
         //m_pipelineParam[refIdx].pipeline_flags = ?? //VA_PROC_PIPELINE_FAST or VA_PROC_PIPELINE_SUBPICTURES
         m_pipelineParam[refIdx].pipeline_flags  |= VA_PROC_PIPELINE_FAST;

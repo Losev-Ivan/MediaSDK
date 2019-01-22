@@ -67,7 +67,9 @@ uint32_t ConvertRateControlMFX2VAAPI(mfxU8 rateControl)
     case MFX_RATECONTROL_QVBR: return VA_RC_QVBR;
 #endif
     case MFX_RATECONTROL_CQP:  return VA_RC_CQP;
+#if VA_CHECK_VERSION(1, 1, 0)
     case MFX_RATECONTROL_ICQ:  return VA_RC_ICQ;
+#endif
     default: assert(!"Unsupported RateControl"); return 0;
     }
 }
@@ -214,6 +216,8 @@ mfxStatus SetRateControl(
     }
 
     rate_param->min_qp = minQP;
+
+#if VA_CHECK_VERSION(1, 1, 0)
     rate_param->max_qp = maxQP;
 
     if (par.mfx.RateControlMethod == MFX_RATECONTROL_ICQ)
@@ -221,6 +225,7 @@ mfxStatus SetRateControl(
 #ifdef MFX_ENABLE_QVBR
     else if (par.mfx.RateControlMethod == MFX_RATECONTROL_QVBR)
         rate_param->quality_factor = extOpt3.QVBRQuality;
+#endif
 #endif
 
     if(par.calcParam.maxKbps)
@@ -231,11 +236,13 @@ mfxStatus SetRateControl(
         rate_param->target_percentage = par.mfx.Accuracy;
     }
 
+#if VA_CHECK_VERSION(1, 1, 0)
     // Activate frame tolerance sliding window mode
     if (extOpt3.WinBRCSize && caps.FrameSizeToleranceSupport)
     {
         rate_param->rc_flags.bits.frame_tolerance_mode = eFrameSizeTolerance_Low;
     }
+#endif
 
     //  MBBRC control
     // Control VA_RC_MB 0: default, 1: enable, 2: disable, other: reserved
@@ -330,7 +337,7 @@ static mfxStatus SetMaxFrameSize(
     return MFX_ERR_NONE;
 }
 
-#if !defined(ANDROID)
+#if VA_CHECK_VERSION(1, 1, 0) && !defined(ANDROID)
 static mfxStatus SetTrellisQuantization(
     mfxU32       trellis,
     VADisplay    vaDisplay,
@@ -371,6 +378,7 @@ static mfxStatus SetTrellisQuantization(
 } // void SetTrellisQuantization(...)
 #endif
 
+#if VA_CHECK_VERSION(1, 1, 0)
 static mfxStatus SetRollingIntraRefresh(
     IntraRefreshState const & rirState,
     VADisplay    vaDisplay,
@@ -412,7 +420,9 @@ static mfxStatus SetRollingIntraRefresh(
 
     return MFX_ERR_NONE;
 } // void SetRollingIntraRefresh(...)
+#endif
 
+#if VA_CHECK_VERSION(1, 1, 0)
 mfxStatus SetQualityParams(
     MfxVideoParam const & par,
     VADisplay    vaDisplay,
@@ -537,6 +547,7 @@ mfxStatus SetQualityParams(
 
     return MFX_ERR_NONE;
 } // void SetQualityParams(...)
+#endif
 
 mfxStatus SetQualityLevel(
     MfxVideoParam const & par,
@@ -1221,9 +1232,11 @@ VAAPIEncoder::VAAPIEncoder()
     , m_frameRateId(VA_INVALID_ID)
     , m_qualityLevelId(VA_INVALID_ID)
     , m_maxFrameSizeId(VA_INVALID_ID)
+#if VA_CHECK_VERSION(1, 1, 0)
     , m_quantizationId(VA_INVALID_ID)
     , m_rirId(VA_INVALID_ID)
     , m_qualityParamsId(VA_INVALID_ID)
+#endif
     , m_miscParameterSkipBufferId(VA_INVALID_ID)
 #if defined (MFX_ENABLE_H264_ROUNDING_OFFSET)
     , m_roundingOffsetId(VA_INVALID_ID)
@@ -1423,8 +1436,10 @@ mfxStatus VAAPIEncoder::CreateAuxilliaryDevice(
 
     m_caps.VCMBitrateControl =
         (attrs[idx_map[VAConfigAttribRateControl]].value & VA_RC_VCM) ? 1 : 0; //Video conference mode
+#if VA_CHECK_VERSION(1, 1, 0)
     m_caps.ICQBRCSupport =
         (attrs[idx_map[VAConfigAttribRateControl]].value & VA_RC_ICQ) ? 1 : 0;
+#endif
 #ifdef MFX_ENABLE_QVBR
     m_caps.QVBRBRCSupport =
         (attrs[idx_map[VAConfigAttribRateControl]].value & VA_RC_QVBR) ? 1 : 0;
@@ -1749,7 +1764,9 @@ mfxStatus VAAPIEncoder::CreateAccelerationService(MfxVideoParam const & par)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetRateControl(par, m_mbbrc, 0, 0, m_vaDisplay, m_vaContextEncode, m_rateParamBufferId, false, m_caps), MFX_ERR_DEVICE_FAILED);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetFrameRate(par, m_vaDisplay, m_vaContextEncode, m_frameRateId),                        MFX_ERR_DEVICE_FAILED);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetQualityLevel(par, m_vaDisplay, m_vaContextEncode, m_qualityLevelId),            MFX_ERR_DEVICE_FAILED);
+#if VA_CHECK_VERSION(1, 1, 0)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetQualityParams(par, m_vaDisplay, m_vaContextEncode, m_qualityParamsId),                MFX_ERR_DEVICE_FAILED);
+#endif
 
 
     FillConstPartOfPps(par, m_pps);
@@ -1809,7 +1826,9 @@ mfxStatus VAAPIEncoder::Reset(MfxVideoParam const & par)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetRateControl(par, m_mbbrc, 0, 0, m_vaDisplay, m_vaContextEncode, m_rateParamBufferId, isBrcResetRequired, m_caps), MFX_ERR_DEVICE_FAILED);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetFrameRate(par, m_vaDisplay, m_vaContextEncode, m_frameRateId),                                            MFX_ERR_DEVICE_FAILED);
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetQualityLevel(par, m_vaDisplay, m_vaContextEncode, m_qualityLevelId),                                      MFX_ERR_DEVICE_FAILED);
+#if VA_CHECK_VERSION(1, 1, 0)
     MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetQualityParams(par, m_vaDisplay, m_vaContextEncode, m_qualityParamsId),                                    MFX_ERR_DEVICE_FAILED);
+#endif
 
     FillConstPartOfPps(par, m_pps);
 
@@ -1882,6 +1901,7 @@ mfxStatus VAAPIEncoder::QueryEncodeCaps(ENCODE_CAPS& caps)
 
 mfxStatus VAAPIEncoder::QueryMbPerSec(mfxVideoParam const & par, mfxU32 (&mbPerSec)[16])
 {
+#if VA_CHECK_VERSION(1, 1, 0)
     VAConfigID config = VA_INVALID_ID;
 
     VAConfigAttrib attrib[2];
@@ -1913,6 +1933,9 @@ mfxStatus VAAPIEncoder::QueryMbPerSec(mfxVideoParam const & par, mfxU32 (&mbPerS
     vaDestroyConfig(m_vaDisplay, config);
 
     return MFX_ERR_NONE;
+#else
+    return MFX_ERR_UNSUPPORTED;
+#endif
 }
 
 mfxStatus VAAPIEncoder::QueryHWGUID(VideoCORE * /*core*/, GUID /*guid*/, bool /*isTemporal*/)
@@ -2005,7 +2028,9 @@ mfxStatus VAAPIEncoder::Execute(
     mfxU16 skipMode = m_skipMode;
     mfxExtCodingOption2     const * ctrlOpt2      = GetExtBuffer(task.m_ctrl);
     mfxExtCodingOption3     const * ctrlOpt3      = GetExtBuffer(task.m_ctrl);
+#if VA_CHECK_VERSION(1, 1, 0)
     mfxExtMBDisableSkipMap  const * ctrlNoSkipMap = GetExtBuffer(task.m_ctrl);
+#endif
 #if defined (MFX_ENABLE_H264_ROUNDING_OFFSET)
     mfxExtAVCRoundingOffset const * ctrlRoundingOffset  = GetExtBuffer(task.m_ctrl, task.m_fid[fieldId]);
 #endif
@@ -2743,7 +2768,7 @@ mfxStatus VAAPIEncoder::Execute(
                                                           m_vaContextEncode, m_maxFrameSizeId), MFX_ERR_DEVICE_FAILED);
     configBuffers[buffersCount++] = m_maxFrameSizeId;
 
-#if !defined(ANDROID)
+#if VA_CHECK_VERSION(1, 1, 0) && !defined(ANDROID)
 /*
  *  By default (0) - driver will decide.
  *  1 - disable trellis quantization
@@ -2758,9 +2783,8 @@ mfxStatus VAAPIEncoder::Execute(
     }
 #endif
 
- /*
- *   RollingIntraRefresh
- */
+#if VA_CHECK_VERSION(1, 1, 0)
+    // RollingIntraRefresh
     if (memcmp(&task.m_IRState, &m_RIRState, sizeof(m_RIRState)))
     {
         m_RIRState = task.m_IRState;
@@ -2768,6 +2792,7 @@ mfxStatus VAAPIEncoder::Execute(
                                                                      m_vaContextEncode, m_rirId), MFX_ERR_DEVICE_FAILED);
         configBuffers[buffersCount++] = m_rirId;
     }
+#endif
 
     if (task.m_numRoi)
     {
@@ -2812,6 +2837,7 @@ mfxStatus VAAPIEncoder::Execute(
         }
     }
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if (ctrlNoSkipMap)
     {
         mfxU32 mbW = m_sps.picture_width_in_mbs;
@@ -2844,6 +2870,7 @@ mfxStatus VAAPIEncoder::Execute(
             configBuffers[buffersCount++] = m_mbNoSkipBufferId;
         }
     }
+#endif
 
 #if defined (MFX_ENABLE_H264_ROUNDING_OFFSET)
     if (m_caps.RoundingOffset && ctrlRoundingOffset)
@@ -2854,12 +2881,15 @@ mfxStatus VAAPIEncoder::Execute(
     }
 #endif
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if (ctrlOpt2 || ctrlOpt3)
     {
         MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetQualityParams(m_videoParam, m_vaDisplay,
                                                                m_vaContextEncode, m_qualityParamsId, &task.m_ctrl), MFX_ERR_DEVICE_FAILED);
     }
+
     if (VA_INVALID_ID != m_qualityParamsId) configBuffers[buffersCount++] = m_qualityParamsId;
+#endif
 
     assert(buffersCount <= configBuffers.size());
 
@@ -3135,9 +3165,12 @@ mfxStatus VAAPIEncoder::QueryStatus(
 
     task.m_qpY[fieldId] = (codedBufferSegment->status & VA_CODED_BUF_STATUS_PICTURE_AVE_QP_MASK);
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if (codedBufferSegment->status & VA_CODED_BUF_STATUS_BAD_BITSTREAM)
         sts = MFX_ERR_GPU_HANG;
-    else if (!codedBufferSegment->size || !codedBufferSegment->buf)
+    else
+#endif
+    if (!codedBufferSegment->size || !codedBufferSegment->buf)
         sts = MFX_ERR_DEVICE_FAILED;
 
     {
@@ -3299,12 +3332,14 @@ mfxStatus VAAPIEncoder::Destroy()
     MFX_CHECK_STS(mfxSts);
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_maxFrameSizeId);
     MFX_CHECK_STS(mfxSts);
+#if VA_CHECK_VERSION(1, 1, 0)
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_quantizationId);
     MFX_CHECK_STS(mfxSts);
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_rirId);
     MFX_CHECK_STS(mfxSts);
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_qualityParamsId);
     MFX_CHECK_STS(mfxSts);
+#endif
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_miscParameterSkipBufferId);
     MFX_CHECK_STS(mfxSts);
     mfxSts = CheckAndDestroyVAbuffer(m_vaDisplay, m_roiBufferId);

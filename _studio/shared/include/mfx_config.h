@@ -39,6 +39,9 @@
         #include <va/va_version.h>
         #undef  MFX_VA_LINUX
         #define MFX_VA_LINUX
+        #if !VA_CHECK_VERSION(1, 1, 0)
+            #undef MFX_ENABLE_MPEG2_VIDEO_ENCODE
+        #endif
     #endif
 #endif
 
@@ -47,7 +50,7 @@
         // HW decoders are part of library
         #define MFX_ENABLE_H264_VIDEO_DECODE
         
-        #if MFX_VERSION >= 1025
+        #if (MFX_VERSION >= 1025) && VA_CHECK_VERSION(1, 1, 0)
             #if !defined(AS_H264LA_PLUGIN)
                 #define MFX_ENABLE_MFE
             #endif
@@ -85,10 +88,10 @@
     #if MFX_VERSION >= 1023
         #define MFX_ENABLE_H264_REPARTITION_CHECK
     #endif
-    #if MFX_VERSION >= 1027
+    #if (MFX_VERSION >= 1027) && VA_CHECK_VERSION(1, 1, 0)
         #define MFX_ENABLE_H264_ROUNDING_OFFSET
     #endif
-    #if defined(MFX_ENABLE_H264_VIDEO_FEI_ENCODE)
+    #if defined(MFX_ENABLE_H264_VIDEO_FEI_ENCODE) && VA_CHECK_VERSION(1, 1, 0)
         #define MFX_ENABLE_H264_VIDEO_FEI_ENCPAK
         #define MFX_ENABLE_H264_VIDEO_FEI_PREENC
         #define MFX_ENABLE_H264_VIDEO_FEI_ENC

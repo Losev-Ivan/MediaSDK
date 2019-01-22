@@ -525,10 +525,13 @@ FrameData *MJPEGVideoDecoderMFX::GetDst(void)
 
 Status MJPEGVideoDecoderMFX::SetRotation(uint16_t rotation)
 {
+#if VA_CHECK_VERSION(1, 1, 0)
     m_rotation = rotation;
 
     return UMC_OK;
-
+#else
+    return UMC_ERR_UNSUPPORTED;
+#endif
 } // MJPEGVideoDecoderMFX::SetRotation(uint16_t rotation)
 
 Status MJPEGVideoDecoderMFX::SetColorSpace(uint16_t chromaFormat, uint16_t colorFormat)
@@ -669,6 +672,7 @@ Status MJPEGVideoDecoderMFX::PostProcessing(double pts)
     m_frameData.SetTime(m_local_frame_time);
     m_local_frame_time += m_local_delta_frame_time;
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if(m_rotation)
     {
         mfxSize size;
@@ -878,6 +882,7 @@ Status MJPEGVideoDecoderMFX::PostProcessing(double pts)
         m_internalFrame.Reset();
         m_internalFrame = rotatedFrame;
     }
+#endif
 
     if(m_needPostProcessing)
     {

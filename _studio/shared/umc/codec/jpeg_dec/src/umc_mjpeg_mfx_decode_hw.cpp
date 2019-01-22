@@ -545,6 +545,7 @@ Status MJPEGVideoDecoderMFX_HW::PackHeaders(MediaData* src, JPEG_DECODE_SCAN_PAR
         picParams->picture_height = (uint16_t)m_decBase->m_jpeg_height;
         picParams->num_components = (uint8_t) m_decBase->m_jpeg_ncomp;
 
+#if VA_CHECK_VERSION(1, 1, 0)
         if(m_decBase->m_jpeg_color == JC_RGB || m_decBase->m_jpeg_color == JC_RGBA) {
             picParams->color_space    = 1;
         } else if(m_decBase->m_jpeg_color == JC_BGR || m_decBase->m_jpeg_color == JC_BGRA) {
@@ -552,6 +553,7 @@ Status MJPEGVideoDecoderMFX_HW::PackHeaders(MediaData* src, JPEG_DECODE_SCAN_PAR
         } else {
             picParams->color_space    = 0;
         }
+
         switch(m_rotation)
         {
         case 0:
@@ -567,7 +569,7 @@ Status MJPEGVideoDecoderMFX_HW::PackHeaders(MediaData* src, JPEG_DECODE_SCAN_PAR
             picParams->rotation = VA_ROTATION_270;
             break;
         }
-
+#endif
         for (int32_t i = 0; i < m_decBase->m_jpeg_ncomp; i++)
         {
             picParams->components[i].component_id             = (uint8_t)m_decBase->m_ccomp[i].m_id;

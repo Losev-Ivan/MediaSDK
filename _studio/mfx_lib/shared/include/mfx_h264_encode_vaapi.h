@@ -71,12 +71,14 @@ mfxStatus SetHRD(
     VAContextID  vaContextEncode,
     VABufferID & hrdBuf_id);
 
+#if VA_CHECK_VERSION(1, 1, 0)
 mfxStatus SetQualityParams(
     MfxHwH264Encode::MfxVideoParam const & par,
     VADisplay    vaDisplay,
     VAContextID  vaContextEncode,
     VABufferID & qualityParams_id,
     mfxEncodeCtrl const * pCtrl = 0);
+#endif
 
 mfxStatus SetQualityLevel(
     MfxHwH264Encode::MfxVideoParam const & par,
@@ -246,9 +248,11 @@ namespace MfxHwH264Encode
         VABufferID m_frameRateId;               // VAEncMiscParameterFrameRate
         VABufferID m_qualityLevelId;            // VAEncMiscParameterBufferQualityLevel
         VABufferID m_maxFrameSizeId;            // VAEncMiscParameterFrameRate
+#if VA_CHECK_VERSION(1, 1, 0)
         VABufferID m_quantizationId;            // VAEncMiscParameterQuantization
         VABufferID m_rirId;                     // VAEncMiscParameterRIR
         VABufferID m_qualityParamsId;           // VAEncMiscParameterEncQuality
+#endif
         VABufferID m_miscParameterSkipBufferId; // VAEncMiscParameterSkipFrame
 #if defined (MFX_ENABLE_H264_ROUNDING_OFFSET)
         VABufferID m_roundingOffsetId;          // VAEncMiscParameterCustomRoundingControl

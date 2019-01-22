@@ -28,7 +28,10 @@
 #include "mfxstructures.h"
 
 #define UMC_VA_NUM_OF_COMP_BUFFERS       8
+
+#if VA_CHECK_VERSION(1, 1, 0)
 #define UMC_VA_DECODE_STREAM_OUT_ENABLE  2
+#endif
 
 UMC::Status va_to_umc_res(VAStatus va_res)
 {
@@ -469,9 +472,11 @@ Status LinuxVideoAccelerator::Init(VideoAcceleratorParams* pInfo)
 
         if (UMC_OK == umcRes && pParams->m_needVideoProcessingVA)
         {
+#if VA_CHECK_VERSION(1, 1, 0)
             if (va_attributes[2].value == VA_DEC_PROCESSING_NONE)
                 umcRes = UMC_ERR_FAILED;
             else
+#endif
                 attribsNumber++;
         }
 

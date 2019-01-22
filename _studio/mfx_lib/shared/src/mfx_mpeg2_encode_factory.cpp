@@ -38,9 +38,9 @@ DriverEncoder* MfxHwMpeg2Encode::CreatePlatformMpeg2Encoder( VideoCORE* core )
     assert( core );
 
 #if defined (MFX_VA_LINUX)
-
     return new VAAPIEncoder(core);
-
+#else
+    return nullptr;
 #endif
 
 } // DriverEncoder* MfxHwMpeg2Encode::CreatePlatformMpeg2Encoder( VideoCORE* core )

@@ -2246,6 +2246,7 @@ void HeaderPacker::PackSSH(
         }
     }
 
+#if VA_CHECK_VERSION(1, 3, 0)
     if (pps.tiles_enabled_flag || pps.entropy_coding_sync_enabled_flag)
     {
         assert(slice.num_entry_point_offsets == 0);
@@ -2260,6 +2261,7 @@ void HeaderPacker::PackSSH(
                 bs.PutBits(slice.offset_len_minus1+1, slice.entry_point_offset_minus1[i]);
         }*/
     }
+#endif
 
     assert(0 == pps.slice_segment_header_extension_present_flag);
 

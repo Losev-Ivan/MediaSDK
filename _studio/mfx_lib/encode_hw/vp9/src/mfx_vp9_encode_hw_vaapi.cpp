@@ -414,7 +414,7 @@ mfxStatus SetRateControl(
             rate_param->rc_flags.bits.temporal_id = tl;
         }
 
-#if (MFX_VERSION >= MFX_VERSION_NEXT)
+#if (MFX_VERSION >= MFX_VERSION_NEXT) && VA_CHECK_VERSION(1, 1, 0)
         mfxExtVP9Param vp9param = GetExtBufferRef(par);
         rate_param->rc_flags.bits.enable_dynamic_scaling = vp9param.DynamicScaling == MFX_CODINGOPTION_ON ? 1 : 0;
 #else
@@ -1281,9 +1281,12 @@ mfxStatus VAAPIEncoder::QueryStatus(
 
                 task.m_bsDataLength = codedBufferSegment->size;
 
+#if VA_CHECK_VERSION(1, 1, 0)
                 if (codedBufferSegment->status & VA_CODED_BUF_STATUS_BAD_BITSTREAM)
                     sts = MFX_ERR_GPU_HANG;
-                else if (!codedBufferSegment->size || !codedBufferSegment->buf)
+                else
+#endif
+                if (!codedBufferSegment->size || !codedBufferSegment->buf)
                     sts = MFX_ERR_DEVICE_FAILED;
 
                 {

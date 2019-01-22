@@ -148,6 +148,7 @@ static mfxStatus SetROI(
     return MFX_ERR_NONE;
 }
 
+#if VA_CHECK_VERSION(1, 1, 0)
 static mfxStatus SetRollingIntraRefresh(
     IntraRefreshState const & rirState,
     VADisplay    vaDisplay,
@@ -188,6 +189,7 @@ static mfxStatus SetRollingIntraRefresh(
 
     return MFX_ERR_NONE;
 } // void SetRollingIntraRefresh(...)
+#endif
 
 void VABuffersHandler::_CheckPool(mfxU32 pool)
 {
@@ -300,7 +302,9 @@ uint32_t ConvertRateControlMFX2VAAPI(mfxU8 rateControl, bool bSWBRC)
         case MFX_RATECONTROL_LA_EXT: return VA_RC_CQP;
         case MFX_RATECONTROL_CBR:    return VA_RC_CBR | VA_RC_MB;
         case MFX_RATECONTROL_VBR:    return VA_RC_VBR | VA_RC_MB;
+#if VA_CHECK_VERSION(1, 1, 0)
         case MFX_RATECONTROL_ICQ:    return VA_RC_ICQ | VA_RC_MB;
+#endif
         case MFX_RATECONTROL_VCM:    return VA_RC_VCM | VA_RC_MB;
         default: assert(!"Unsupported RateControl"); return 0;
     }
@@ -397,8 +401,10 @@ mfxStatus SetRateControl(
         rate_param->rc_flags.bits.enable_parallel_brc = 0;
     }
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if (par.mfx.RateControlMethod == MFX_RATECONTROL_ICQ)
         rate_param->ICQ_quality_factor = par.mfx.ICQQuality;
+#endif
 
     rate_param->initial_qp = par.m_pps.init_qp_minus26 + 26;
 
@@ -1661,12 +1667,15 @@ mfxStatus VAAPIEncoder::Execute(Task const & task, mfxHDLPair pair)
                               MFX_ERR_DEVICE_FAILED);
     }
 
+#if VA_CHECK_VERSION(1, 1, 0)
+    // RollingIntraRefresh
     if (task.m_IRState.refrType)
     {
         VABufferID &m_rirId = VABufferNew(VABID_RIR,0);
         MFX_CHECK_WITH_ASSERT(MFX_ERR_NONE == SetRollingIntraRefresh(task.m_IRState, m_vaDisplay,
                                                                  m_vaContextEncode, m_rirId), MFX_ERR_DEVICE_FAILED);
     }
+#endif
 
     mfxU32 storedSize = 0;
 
@@ -1890,9 +1899,12 @@ mfxStatus VAAPIEncoder::QueryStatus(Task & task)
                  task.m_bsDataLength = codedBufferSegment->size;
                  task.m_avgQP = (codedBufferSegment->status & VA_CODED_BUF_STATUS_PICTURE_AVE_QP_MASK);
 
+#if VA_CHECK_VERSION(1, 1, 0)
                 if (codedBufferSegment->status & VA_CODED_BUF_STATUS_BAD_BITSTREAM)
                     sts = MFX_ERR_GPU_HANG;
-                else if (!codedBufferSegment->size || !codedBufferSegment->buf)
+                else 
+#endif
+                if (!codedBufferSegment->size || !codedBufferSegment->buf)
                     sts = MFX_ERR_DEVICE_FAILED;
 
                 codedStatus = codedBufferSegment->status;

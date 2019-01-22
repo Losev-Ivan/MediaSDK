@@ -744,6 +744,7 @@ void PackerVA::BeginFrame(H264DecoderFrame* pFrame, int32_t field)
         if (pFrame->GetAU(field)->IsField())
             size /= 2;
 
+#if VA_CHECK_VERSION(1, 1, 0)
         VAStreamOutBuffer* buffer = NULL;
         m_va->GetCompBuffer(VADecodeStreamoutBufferType, reinterpret_cast<UMCVACompBuffer**>(&buffer), size, pFrame->m_index);
         if (buffer)
@@ -751,6 +752,7 @@ void PackerVA::BeginFrame(H264DecoderFrame* pFrame, int32_t field)
             buffer->BindToField(field);
             buffer->RemapRefs(so->RemapRefIdx == MFX_CODINGOPTION_ON);
         }
+#endif
     }
 }
 

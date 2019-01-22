@@ -155,6 +155,7 @@ mfxStatus VideoVppJpegD3D9::Init(const mfxVideoParam *par)
     mfxVppCaps caps;
     caps = m_ddi.GetCaps();
 
+#if VA_CHECK_VERSION(1, 1, 0)
     if (caps.uRotation) {
         switch(par->mfx.Rotation)
         {
@@ -171,7 +172,9 @@ mfxStatus VideoVppJpegD3D9::Init(const mfxVideoParam *par)
             m_rotation = MFX_ANGLE_270;
             break;
         }
-    } else {
+    } else
+#endif
+    {
         if(MFX_ROTATION_0 != par->mfx.Rotation)
             return MFX_ERR_UNSUPPORTED;
     }

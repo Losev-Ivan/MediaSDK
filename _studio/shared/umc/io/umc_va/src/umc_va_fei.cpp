@@ -30,7 +30,9 @@
 #include <algorithm>
 #include <climits>
 
+#if VA_CHECK_VERSION(1, 1, 0)
 #define UMC_VA_DECODE_STREAM_OUT_ENABLE  2
+#endif
 
 //#define UMC_VA_STREAMOUT_DEBUG
 
